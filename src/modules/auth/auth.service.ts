@@ -149,7 +149,7 @@ export class AuthService {
       throw new UnauthorizedException('Email or Password does not match');
     }
     const tokens = await this.generateToken(user.id, user.email);
-    await this.updateRefreshToken(user.id, user.email);
+    await this.updateRefreshToken(user.id, tokens.refreshToken);
 
     return {
       status: true,

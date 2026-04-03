@@ -1,11 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
   Patch,
-  Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -32,7 +32,7 @@ export class UsersController {
     return this.usersService.findOne(req.user.id);
   }
 
-  @Get('all')
+  @Get()
   @Roles(Role.ADMIN)
   async getAll(): Promise<UserResponseDto[]> {
     return this.usersService.getAll();
@@ -62,7 +62,23 @@ export class UsersController {
     @GetUser('id')
     id: number,
     @Body() updatePasswordDto: UpdatePasswordDto,
-  ) {
+  ): Promise<{ status: boolean; message: string }> {
     return this.usersService.changePassword(id, updatePasswordDto);
+  }
+
+  @Patch('me/delete')
+  @Roles(Role.USER)
+  async delete(
+    @GetUser('id') id: number,
+  ): Promise<{ status: boolean; message: string }> {
+    return this.usersService.delete(id);
+  }
+
+  @Delete('delete/:id')
+  @Roles(Role.ADMIN)
+  async deleteUser(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<{ status: boolean; message: string }> {
+    return this.usersService.deleteUser(id);
   }
 }

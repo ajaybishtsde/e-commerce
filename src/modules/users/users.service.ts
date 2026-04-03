@@ -19,7 +19,7 @@ export class UsersService {
   constructor(private prismaService: PrismaService) {}
 
   async findOne(id: number): Promise<UserResponseDto> {
-    const user = await this.prismaService.user.findUnique({
+    const user = await this.prismaService.user.findFirst({
       where: {
         id,
         isDeleted: false,
@@ -39,6 +39,7 @@ export class UsersService {
   }
 
   async getAll(): Promise<UserResponseDto[]> {
+    console.log('>>s>inn');
     const allUsers = await this.prismaService.user.findMany({
       where: {
         isDeleted: false,
@@ -60,7 +61,7 @@ export class UsersService {
   }
 
   async updateUser(id: number, data: UpdateUserDto): Promise<UserResponseDto> {
-    const existingUser = await this.prismaService.user.findUnique({
+    const existingUser = await this.prismaService.user.findFirst({
       where: {
         id,
         isDeleted: false,
@@ -98,7 +99,7 @@ export class UsersService {
 
   async changePassword(id: number, data: UpdatePasswordDto) {
     const { currentPassword, newPassword } = data;
-    const userExist = await this.prismaService.user.findUnique({
+    const userExist = await this.prismaService.user.findFirst({
       where: {
         id,
         isDeleted: false,
@@ -142,7 +143,7 @@ export class UsersService {
   }
 
   async delete(id: number) {
-    const user = await this.prismaService.user.findUnique({
+    const user = await this.prismaService.user.findFirst({
       where: {
         id,
         isDeleted: false,
@@ -156,6 +157,26 @@ export class UsersService {
       },
       data: {
         isDeleted: true,
+      },
+    });
+    return {
+      status: true,
+      message: 'User deleted',
+    };
+  }
+
+  async deleteUser(id: number) {
+    const userExist = await this.prismaService.user.findFirst({
+      where: {
+        id,
+        isDeleted: false,
+      },
+    });
+    if (!userExist) throw new NotFoundException('User not found');
+
+    await this.prismaService.user.delete({
+      where: {
+        id,
       },
     });
     return {
