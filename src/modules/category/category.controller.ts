@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { CategoryService } from './category.service';
 import { JwtAuthGuard } from 'src/common/gaurds/jwt.auth.gaurd';
 import { RolesGuard } from 'src/common/gaurds/roles.gaurd';
@@ -7,6 +18,7 @@ import { Role } from '@prisma/client';
 import { CategoryDto } from './dto/create-category.dto';
 import { CategoryReponseDto } from './dto/category-response.dto';
 import { QueryyCategoryDto } from './dto/queryCategoryDto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Controller('category')
@@ -18,7 +30,7 @@ export class CategoryController {
   async create(
     @Body() categoryDto: CategoryDto,
   ): Promise<{ status: boolean; data: CategoryReponseDto }> {
-    return await this.categoryService.create(categoryDto);
+    return this.categoryService.create(categoryDto);
   }
 
   @Get('all')
@@ -29,6 +41,37 @@ export class CategoryController {
       meta: { total: number; page: number; limit: number; totalPages: number };
     };
   }> {
-    return await this.categoryService.findAll(queryDto);
+    return this.categoryService.findAll(queryDto);
+  }
+
+  @Get(':id')
+  async getById(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<{ status: boolean; data: CategoryReponseDto }> {
+    return this.categoryService.findOne(id);
+  }
+
+  @Get('slug/:slug')
+  async findBySlug(
+    @Param('slug') slug: string,
+  ): Promise<{ status: boolean; data: CategoryReponseDto }> {
+    return this.categoryService.findBySlug(slug);
+  }
+
+  @Patch(':id')
+  @Roles(Role.ADMIN)
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() updateCategoryDto: UpdateCategoryDto,
+  ): Promise<{ status: boolean; message: string }> {
+    return this.categoryService.update(id, updateCategoryDto);
+  }
+
+  @Delete(':id')
+  @Roles(Role.ADMIN)
+  async delete(
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<{ status: boolean; message: string }> {
+    return this.categoryService.delete(id);
   }
 }
